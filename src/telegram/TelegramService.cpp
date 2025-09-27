@@ -1,5 +1,7 @@
 #include "TelegramService.h"
 
+using namespace std;
+
 namespace debt_collector::telegram
 {
     TelegramService::TelegramService(UniversalTelegramBot &&bot) : bot(move(bot))
@@ -12,13 +14,13 @@ namespace debt_collector::telegram
 
     void TelegramService::subscribeToMessages(const function<void(String &, String &)> &func)
     {
-        int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+        auto numNewMessages = bot.getUpdates(bot.last_message_received + 1);
 
         while (numNewMessages)
         {
             for (int i = 0; i < numNewMessages; i++)
             {
-                telegramMessage message = bot.messages[i];
+                auto message = bot.messages[i];
 
                 func(message.chat_id, message.text);
             }
