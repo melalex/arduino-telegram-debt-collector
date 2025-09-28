@@ -21,8 +21,9 @@ namespace debt_collector::util
 
     bool FileDict::init()
     {
-        if (!LittleFS.begin())
+        if (!LittleFS.begin(true))
         {
+            Serial.println("LittleFS mount failed");
             return false;
         }
 
@@ -30,6 +31,8 @@ namespace debt_collector::util
 
         if (!file.isOpen())
         {
+            Serial.print("Cannot open file: ");
+            Serial.println(filename);
             return false;
         }
 
@@ -37,7 +40,7 @@ namespace debt_collector::util
 
         uint64_t key;
         int32_t value;
-        size_t position = sizeof(key);
+        size_t position = 0;
 
         while (file.available() >= sizeof(key) + sizeof(value))
         {
@@ -56,18 +59,28 @@ namespace debt_collector::util
                 return false;
             }
 
-            index[key] = position;
+            index[key] = position + sizeof(key);
 
             position += (sizeof(key) + sizeof(value));
         }
 
+        initialized = true;
+
         return true;
+    }
+
+    bool FileDict::isInitialized() const noexcept
+    {
+        return initialized;
     }
 
     int32_t FileDict::get(uint64_t key)
     {
         if (!index.count(key))
         {
+            Serial.print("Cannot find key in the index: ");
+            Serial.println(key);
+
             return 0;
         }
 
@@ -77,11 +90,17 @@ namespace debt_collector::util
 
         if (!file.isOpen())
         {
+            Serial.print("Cannot open file for read: ");
+            Serial.println(filename);
+
             return 0;
         }
 
         if (!file.seek(position))
         {
+            Serial.print("Cannot change position: ");
+            Serial.println(position);
+
             return 0;
         }
 
@@ -89,6 +108,9 @@ namespace debt_collector::util
 
         if (file.read(reinterpret_cast<uint8_t *>(&value), sizeof(value)) != sizeof(value))
         {
+            Serial.print("Cannot read value: ");
+            Serial.println(position);
+
             return 0;
         }
 
@@ -101,6 +123,8 @@ namespace debt_collector::util
 
         if (!file.isOpen())
         {
+            Serial.print("Cannot open file for write: ");
+            Serial.println(filename);
             return false;
         }
 

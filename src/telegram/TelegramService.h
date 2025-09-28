@@ -9,11 +9,21 @@ namespace debt_collector::telegram
     {
     private:
         UniversalTelegramBot bot;
+        unsigned long lastMessageReceivedAt;
+        unsigned long messageRate;
 
     public:
-        TelegramService(UniversalTelegramBot &&bot);
+        TelegramService(UniversalTelegramBot &&bot, unsigned long messageRate);
         ~TelegramService();
-        void subscribeToMessages(const function<void(String &, String &)> &func) override;
-        void sendMessage(const String &chat_id, const String &message) override;
+
+        void checkForNewMessages(MessageConsumer messageConsumer) override;
+        void sendMessage(const String &chat_id, const String &message, const String &parseMode) override;
+        void sendMessageWithInlineKeyboard(const String &chat_id,
+                                           const String &text,
+                                           const String &parse_mode,
+                                           const String &keyboard) override;
+
+        void answerInlineQuery(const String &query_id, const String &results) override;
+        void editMessageText(const String &inline_message_id, const String &text, const String &reply_markup) override;
     };
 }
