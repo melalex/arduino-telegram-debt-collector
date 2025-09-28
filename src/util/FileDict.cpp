@@ -1,7 +1,5 @@
-#include <LittleFS.h>
-
 #include "FileDict.h"
-#include "RaiiLittleFs.h"
+#include "RaiiFs.h"
 
 namespace debt_collector::util
 {
@@ -21,13 +19,18 @@ namespace debt_collector::util
 
     bool FileDict::init()
     {
-        if (!LittleFS.begin(true))
+        if (!RaiiFs::begin(true))
         {
-            Serial.println("LittleFS mount failed");
+            Serial.println("FS mount failed");
             return false;
         }
 
-        auto file = RaiiLittleFs(filename.c_str(), FILE_APPEND);
+        if (!ensureFileExists(filename.c_str()))
+        {
+            return false;
+        }
+
+        auto file = RaiiFs(filename.c_str(), FILE_READ);
 
         if (!file.isOpen())
         {
@@ -42,27 +45,49 @@ namespace debt_collector::util
         int32_t value;
         size_t position = 0;
 
-        while (file.available() >= sizeof(key) + sizeof(value))
+        do
         {
             if (!file.seek(position))
             {
+                Serial.print("Cannot seek position: ");
+                Serial.println(position);
+
                 return false;
             }
 
-            if (file.read(reinterpret_cast<uint8_t *>(&key), sizeof(key)) != sizeof(key))
+            auto readSize = file.read(reinterpret_cast<uint8_t *>(&key), sizeof(key));
+
+            if (readSize != sizeof(key))
             {
+                Serial.print("Cannot read key at position: ");
+                Serial.print(position);
+                Serial.print(". Read size: ");
+                Serial.println(readSize);
+
                 return false;
             }
+
+            readSize = file.read(reinterpret_cast<uint8_t *>(&value), sizeof(value));
 
             if (file.read(reinterpret_cast<uint8_t *>(&value), sizeof(value)) != sizeof(value))
             {
+                Serial.print("Cannot read value at position: ");
+                Serial.print(position);
+                Serial.print(". Read size: ");
+                Serial.println(readSize);
+
                 return false;
             }
 
             index[key] = position + sizeof(key);
 
+            Serial.print("Loaded index: ");
+            Serial.print(key);
+            Serial.print(" -> ");
+            Serial.println(position);
+
             position += (sizeof(key) + sizeof(value));
-        }
+        } while (file.available() >= sizeof(key) + sizeof(value));
 
         initialized = true;
 
@@ -86,7 +111,7 @@ namespace debt_collector::util
 
         auto position = index[key];
 
-        auto file = RaiiLittleFs(filename.c_str(), FILE_READ);
+        auto file = RaiiFs(filename.c_str(), FILE_READ);
 
         if (!file.isOpen())
         {
@@ -119,7 +144,7 @@ namespace debt_collector::util
 
     bool FileDict::put(uint64_t key, int32_t value)
     {
-        auto file = RaiiLittleFs(filename.c_str(), FILE_APPEND);
+        auto file = RaiiFs(filename.c_str(), FILE_APPEND);
 
         if (!file.isOpen())
         {
@@ -145,6 +170,28 @@ namespace debt_collector::util
             file.write((uint8_t *)&value, sizeof(value));
         }
 
+        return true;
+    }
+
+    bool FileDict::ensureFileExists(const char *path)
+    {
+        if (!RaiiFs::exists(path))
+        {
+            auto f = RaiiFs(path, FILE_WRITE);
+            if (!f.isOpen())
+            {
+                Serial.println("Failed to create file: ");
+                Serial.println(path);
+                return false;
+            }
+            Serial.print("File created: ");
+            Serial.println(path);
+        }
+        else
+        {
+            Serial.println("File already exists: ");
+            Serial.println(path);
+        }
         return true;
     }
 }

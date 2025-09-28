@@ -1,13 +1,15 @@
-#include "RaiiLittleFs.h"
+#include "RaiiFs.h"
+
+#include <SPIFFS.h>
 
 namespace debt_collector::util
 {
-    RaiiLittleFs::RaiiLittleFs(const char *path, const char *mode)
+    RaiiFs::RaiiFs(const char *path, const char *mode)
     {
-        file = LittleFS.open(path, mode, true);
+        file = SPIFFS.open(path, mode, true);
     }
 
-    RaiiLittleFs::~RaiiLittleFs()
+    RaiiFs::~RaiiFs()
     {
         if (file)
         {
@@ -15,12 +17,22 @@ namespace debt_collector::util
         }
     }
 
-    bool RaiiLittleFs::isOpen() const
+    bool RaiiFs::begin(bool formatOnFail)
+    {
+        return SPIFFS.begin(formatOnFail);
+    }
+
+    bool RaiiFs::exists(const char *path)
+    {
+        return SPIFFS.exists(path);
+    }
+
+    bool RaiiFs::isOpen() const
     {
         return file;
     }
 
-    size_t RaiiLittleFs::read(uint8_t *buffer, size_t size)
+    size_t RaiiFs::read(uint8_t *buffer, size_t size)
     {
         if (!file)
         {
@@ -30,7 +42,7 @@ namespace debt_collector::util
         return file.read(buffer, size);
     }
 
-    size_t RaiiLittleFs::write(uint8_t *buffer, size_t size)
+    size_t RaiiFs::write(uint8_t *buffer, size_t size)
     {
         if (!file)
         {
@@ -40,7 +52,7 @@ namespace debt_collector::util
         return file.write(buffer, size);
     }
 
-    bool RaiiLittleFs::seek(size_t pos)
+    bool RaiiFs::seek(size_t pos)
     {
         if (!file)
         {
@@ -50,7 +62,7 @@ namespace debt_collector::util
         return file.seek(pos);
     }
 
-    size_t RaiiLittleFs::position() const
+    size_t RaiiFs::position() const
     {
         if (!file)
         {
@@ -60,7 +72,7 @@ namespace debt_collector::util
         return file.position();
     }
 
-    size_t RaiiLittleFs::available()
+    size_t RaiiFs::available()
     {
         if (!file)
         {
@@ -70,7 +82,7 @@ namespace debt_collector::util
         return file.available();
     }
 
-    size_t RaiiLittleFs::size() const
+    size_t RaiiFs::size() const
     {
         if (!file)
         {

@@ -1,17 +1,20 @@
 #pragma once
 
-#include <LittleFS.h>
+#include <FS.h>
 
 namespace debt_collector::util
 {
-    class RaiiLittleFs
+    class RaiiFs
     {
     private:
         File file;
 
     public:
-        RaiiLittleFs(const char *path, const char *mode);
-        ~RaiiLittleFs();
+        RaiiFs(const char *path, const char *mode);
+        ~RaiiFs();
+
+        static bool begin(bool formatOnFail = false);
+        static bool exists(const char *path);
 
         bool isOpen() const;
         size_t read(uint8_t *buffer, size_t size);

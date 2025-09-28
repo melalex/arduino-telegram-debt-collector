@@ -44,6 +44,10 @@ namespace debt_collector::debt
 
         auto intId = id.toInt();
         auto oldValue = dict.get(intId);
+
+        Serial.print("Old value is: ");
+        Serial.println(oldValue);
+
         auto newValue = oldValue + amount;
 
         dict.put(intId, newValue);

@@ -11,9 +11,6 @@ The bot uses an inline keyboard interface for smooth interaction and stores who 
 * Works in private Telegram chats only.
 * Inline keyboard for quick interaction.
 * Debts are tied to a unique user ID (no manual debtor selection).
-* Supports positive and negative values:
-    * Positive ➝ Add new debt.
-    * Negative ➝ Mark debt as paid.
 
 ## Requirements
 
@@ -40,11 +37,7 @@ pio run --target upload
 
 ## Usage
 
-Add the bot to a private chat and use the commands:
+Bot supports following commands:
 ```
-@DebtCollector {money_amount} // Registers debt for the sender’s chat_id.
-@DebtCollector debt           // Shows your current outstanding debt.
+@DebtCollector {money_amount} // Registers debt for the sender’s id.
 ```
-
-* @DebtCollector 50 → You owe 50.
-* @DebtCollector -50 → Your 50 debt is cleared.

@@ -13,6 +13,8 @@ namespace debt_collector::util
         String filename;
         bool initialized = false;
 
+        bool ensureFileExists(const char *path);
+
     public:
         FileDict(const String &filename) noexcept;
         FileDict(FileDict &&other) noexcept;

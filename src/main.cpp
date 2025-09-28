@@ -8,6 +8,7 @@
 #include "secrets.h"
 #include "telegram/TelegramService.h"
 #include "debt/DebtService.h"
+#include <SPIFFS.h>
 
 using namespace debt_collector::telegram;
 using namespace debt_collector::debt;
@@ -74,7 +75,7 @@ void setup()
     Serial.println(WiFi.localIP());
 
     Serial.print("Retrieving time: ");
-    configTime(0, 0, "pool.ntp.org"); // get UTC time via NTP
+    configTime(0, 0, "pool.ntp.org"); 
     auto now = time(nullptr);
 
     iterCount = 0;
@@ -126,8 +127,6 @@ void handleNewMessages(const TelegramMessage &message)
     {
         Serial.print("Call back button pressed: ");
         Serial.println(message.inline_message_id);
-        Serial.print("Data on the button: ");
-        Serial.println(message.text);
 
         auto input = message.text;
         auto sep = input.indexOf('|');
@@ -136,6 +135,11 @@ void handleNewMessages(const TelegramMessage &message)
         {
             auto caller = input.substring(0, sep);
             auto amount = input.substring(sep + 1).toInt();
+
+            Serial.print("Caller is: ");
+            Serial.println(caller);
+            Serial.print("Amount is: ");
+            Serial.println(amount);
 
             auto newDebtAmount = debtService.updateDebt(caller, message.from_id, amount);
             auto responseText = "Debt change is accepted. New debt amount: " + String(newDebtAmount);
